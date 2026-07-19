@@ -34,8 +34,12 @@ som_andar = pygame.mixer.Sound("sons/andando.wav")
 som_andar.set_volume(0.7)
 som_toma_dano = pygame.mixer.Sound("sons/dano.wav")
 som_toma_dano.set_volume(1.0)
+trilha_sonora = pygame.mixer.Sound("sons/trilha sonora.wav")
+trilha_sonora.set_volume(0.3)
+
 
 canal_soundtrack = pygame.mixer.Channel(0)
+canal_soundtrack.play(trilha_sonora,-1)
 canal_andar = pygame.mixer.Channel(1)
 canal_troca_sala = pygame.mixer.Channel(2)
 canal_toma_dano = pygame.mixer.Channel(3)
