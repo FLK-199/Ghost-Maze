@@ -12,7 +12,7 @@ XXXXXX...XXXXXXX...X
 ....XX...XXXXXXX...X
 ....XX...XXX.......X
 X...XX...XXX.......X
-X...XX...XXX.......X
+X...XX...XXX...1...X
 X...XX...XXX.......X
 X........XXXXXXXXXXX
 X........XXXXXXXXXXX

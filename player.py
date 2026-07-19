@@ -1,4 +1,5 @@
 import pygame
+from caminhos import *
 
 display = 600
 
@@ -6,9 +7,9 @@ pygame.init()
 pygame.mixer.init()
 
 frames_personagem = []
-frames_personagem.append(pygame.image.load("imagens/player1.png"))
-frames_personagem.append(pygame.image.load("imagens/player2.png"))
-frames_personagem.append(pygame.image.load("imagens/player3.png"))
+frames_personagem.append(pygame.image.load(resource_path("imagens/player1.png")))
+frames_personagem.append(pygame.image.load(resource_path("imagens/player2.png")))
+frames_personagem.append(pygame.image.load(resource_path("imagens/player3.png")))
 
 anispeed = 2.5
 
@@ -28,6 +29,7 @@ class Player():
         self.color = (150,150,230)
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         self.escala_sprite = 1.0
+        self.assombrado = False
         #--------------Movimento--------------
         self.velocidade = 2
         self.velocidade_sem_dash = 2
@@ -35,8 +37,8 @@ class Player():
         self.velocidade_escala = 1.0
         self.tempo_andando = 0.0
         #--------------Dashes--------------
-        self.sem_dash = pygame.image.load("imagens/dash1.png").convert_alpha() 
-        self.com_dash = pygame.image.load("imagens/dash2.png").convert_alpha() 
+        self.sem_dash = pygame.image.load(resource_path("imagens/dash1.png")).convert_alpha() 
+        self.com_dash = pygame.image.load(resource_path("imagens/dash2.png")).convert_alpha() 
         self.dando_dash = False
         self.fadeout_escuridao = 0.0
         self.campo_de_visao_offset = 0.0
@@ -47,8 +49,8 @@ class Player():
         self.pode_dar_dash = True
         self.contagem_de_dashes = 0
         #--------------Sons--------------
-        self.som_de_dash = pygame.mixer.Sound("sons/dash.wav")
-        self.som_de_recarga = pygame.mixer.Sound("sons/recarga de dash.wav")
+        self.som_de_dash = pygame.mixer.Sound(resource_path("sons/dash.wav"))
+        self.som_de_recarga = pygame.mixer.Sound(resource_path("sons/recarga de dash.wav"))
         #--------------Chaves--------------
         self.coletou_chave1 = False
         self.coletou_chave2 = False
@@ -71,7 +73,7 @@ class Player():
     def gerencia_dash(self):
         if self.dando_dash:
             self.dash_progresso = clamp(self.dash_progresso + 1/60,0,self.dash_tempo_maximo)
-            self.velocidade = lerp(self.velocidade_com_dash,self.velocidade_sem_dash,self.dash_progresso/self.dash_tempo_maximo)
+            self.velocidade = lerp(self.velocidade_com_dash,self.velocidade_sem_dash,self.dash_progresso/self.dash_tempo_maximo)*self.velocidade_escala
             self.escala_sprite = lerp(0.25,1.0,self.dash_progresso/self.dash_tempo_maximo)
             if self.dash_progresso == self.dash_tempo_maximo:
                 self.dando_dash = False
@@ -83,7 +85,56 @@ class Player():
             if self.dash_recarga <= 0.0 and not self.pode_dar_dash:
                 self.som_de_recarga.play(0)
                 self.pode_dar_dash = True
-            self.velocidade = self.velocidade_sem_dash
+            self.velocidade = self.velocidade_sem_dash*self.velocidade_escala
+
+    def upgrade_chave1(self):
+        self.assombrado = True
+        self.coletou_chave1 = True
+        self.velocidade_escala += 0.15
+        self.campo_de_visao_offset += 0.35
+        self.tempo_de_recarga_por_dash -= 0.75
+        self.dash_tempo_maximo += 0.125
+
+    def upgrade_chave2(self):
+        self.assombrado = True
+        self.coletou_chave2 = True
+        self.velocidade_escala += 0.15
+        self.campo_de_visao_offset += 0.35
+        self.tempo_de_recarga_por_dash -= 0.75
+        self.dash_tempo_maximo += 0.125
+
+    def upgrade_chave3(self):
+        self.assombrado = True
+        self.coletou_chave3 = True
+        self.velocidade_escala += 0.15
+        self.campo_de_visao_offset += 0.35
+        self.tempo_de_recarga_por_dash -= 0.75
+        self.dash_tempo_maximo += 0.125
+
+
+    def desfazer_chave1(self):
+        self.coletou_chave1 = False
+        self.assombrado = False
+        self.velocidade_escala -= 0.15
+        self.campo_de_visao_offset -= 0.35
+        self.tempo_de_recarga_por_dash += 0.75
+        self.dash_tempo_maximo -= 0.125
+
+    def desfazer_chave2(self):
+        self.coletou_chave2 = False
+        self.assombrado = False
+        self.velocidade_escala -= 0.15
+        self.campo_de_visao_offset -= 0.35
+        self.tempo_de_recarga_por_dash += 0.75
+        self.dash_tempo_maximo -= 0.125
+
+    def desfazer_chave3(self):
+        self.coletou_chave3 = False
+        self.assombrado = False
+        self.velocidade_escala -= 0.15
+        self.campo_de_visao_offset -= 0.35
+        self.tempo_de_recarga_por_dash += 0.75
+        self.dash_tempo_maximo -= 0.125
 
     def draw(self, tela, time):
         index = int((time * anispeed) % 3)
@@ -152,11 +203,12 @@ class Player():
 class Escuridao(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image_original = pygame.image.load("imagens/circulo.png").convert_alpha() 
-        self.image = pygame.image.load("imagens/circulo.png").convert_alpha()
+        self.image_original = pygame.image.load(resource_path("imagens/circulo.png")).convert_alpha() 
+        self.image = pygame.image.load(resource_path("imagens/circulo.png")).convert_alpha()
         self.rect = self.image.get_rect()
         self.dimensoes_base = (1200,1200)
         self.dimensoes = [1200,1200]
+        self.escala_sprite = 1.0
 
     def reposiciona(self , novox, novoy):
         self.rect.x = novox - self.dimensoes[0]/2
@@ -164,7 +216,11 @@ class Escuridao(pygame.sprite.Sprite):
 
     def reescalona(self, fator_de_escala):
         #Estica a imagem de um jeito maneiro, seila como q ele faz
-        self.dimensoes[0] = self.dimensoes_base[0]*fator_de_escala
-        self.dimensoes[1] = self.dimensoes_base[1]*fator_de_escala
-        self.image = pygame.transform.scale_by(self.image_original,fator_de_escala)
-        self.rect = self.image.get_rect()
+        if fator_de_escala == self.escala_sprite:
+            return
+        else:
+            self.dimensoes[0] = self.dimensoes_base[0]*fator_de_escala
+            self.dimensoes[1] = self.dimensoes_base[1]*fator_de_escala
+            self.escala_sprite = fator_de_escala
+            self.image = pygame.transform.scale_by(self.image_original,self.escala_sprite)
+            self.rect = self.image.get_rect()
