@@ -3,9 +3,14 @@ import pygame
 # Tamanho em pixels de cada "quadradinho" da grade
 TAMANHO_TILE = 30
 
+chao = pygame.image.load("imagens/chao.jpeg") 
+parede = pygame.image.load("imagens/parede.jpeg") 
+
+
 class Tilemap:
     def __init__(self, caminho_arquivo):
         self.blocos = []              # Guarda os retângulos de colisão
+        self.espaco_chao = []         # Espaco do chao, pra desenhar os blocos de chao depois
         self.inimigos = []            # Guarda as posições dos inimigos
         self.chave1 = (-1,-1)  
         self.chave2 = (-1,-1)
@@ -38,11 +43,18 @@ class Tilemap:
                     self.chave2 = (px, py)
                 elif caractere == '3':
                     self.chave3 = (px, py)
+                elif caractere == ".":
+                    #Nao da nada, o bloco so um retangulo.
+                    self.espaco_chao.append(bloco)
 
     def desenhar(self, tela):
+        for superficie in self.espaco_chao:
+            pygame.draw.rect(tela, (0, 90, 50), superficie)
+            tela.blit(chao,superficie)
         for bloco in self.blocos:
             # Desenha cada bloco (você pode substituir por uma imagem/sprite depois)
             pygame.draw.rect(tela, (0, 90, 50), bloco)
+            tela.blit(parede,bloco)
             # Desenha uma borda escura para dar efeito de blocos separados
             #pygame.draw.rect(tela, (50, 50, 50), bloco, 2)
 

@@ -88,6 +88,10 @@ def tocar_quando_anda():
     elif not (teclas[pygame.K_a] or teclas[pygame.K_d] or teclas[pygame.K_w] or teclas[pygame.K_s]):
         canal_andar.stop()       
 
+def spawnar_inimigos(quantidade):
+    for i in range(quantidade):
+        inimigos.append(inimigos.append(Inimigo(numpy.random.normal(315,5),numpy.random.uniform(0,2*math.pi))))
+
 #loop principal
 while jogando:
     for event in pygame.event.get():
@@ -99,9 +103,6 @@ while jogando:
 
     teclas = pygame.key.get_pressed()
     tela.fill((154, 139, 119))
-    
-    if teclas[pygame.K_SPACE]:
-        inimigos.append(Inimigo(numpy.random.normal(315,5),numpy.random.uniform(0,2*math.pi)))
 
     #carrega as fases
     if i >= 0 and i < 5 and j >= 0 and j < 5:
@@ -126,25 +127,25 @@ while jogando:
             p1.alterar_posicao((600-p1.width)+p1.x, p1.y)
             j -= 1
         #parede da direita
-        if p1.x + p1.width > 600:
+        elif p1.x + p1.width > 600:
             p1.alterar_posicao(abs((600-p1.width)-p1.x), p1.y)
             j += 1
         #parede de cima
-        if p1.y < 0:
+        elif p1.y < 0:
             p1.alterar_posicao(p1.x, (600-p1.height)+p1.y)
             i -= 1
         #parede de baixo
-        if p1.y + p1.height > 600:
+        elif p1.y + p1.height > 600:
             p1.alterar_posicao(p1.x, abs((600-p1.height)-p1.y))
-            i += 1
-
-    escuro.reescalona(lerp(1.55+p1.campo_de_visao_offset,1.0+p1.campo_de_visao_offset,1.0 - p1.fadeout_escuridao/1.25))
-    escuro.reposiciona(p1.x + p1.width/2,p1.y + p1.height/2)
-
+            i += 1    
     if i == 2 and j == 2:
+        #Tudo isso so precisa ser feito uma vez
         escuro.reescalona(2.75)
         escuro.reposiciona(300,300)
         fase.desenhar_portao(tela)
+
+    escuro.reescalona(lerp(1.55+p1.campo_de_visao_offset,1.0+p1.campo_de_visao_offset,1.0 - p1.fadeout_escuridao/1.25))
+    escuro.reposiciona(p1.x + p1.width/2,p1.y + p1.height/2)
 
     todos_sprites.draw(tela)
     for oponente in inimigos:

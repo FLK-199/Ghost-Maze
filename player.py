@@ -27,6 +27,7 @@ class Player():
         self.height = 20
         self.color = (150,150,230)
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.escala_sprite = 1.0
         #--------------Movimento--------------
         self.velocidade = 2
         self.velocidade_sem_dash = 2
@@ -71,10 +72,12 @@ class Player():
         if self.dando_dash:
             self.dash_progresso = clamp(self.dash_progresso + 1/60,0,self.dash_tempo_maximo)
             self.velocidade = lerp(self.velocidade_com_dash,self.velocidade_sem_dash,self.dash_progresso/self.dash_tempo_maximo)
+            self.escala_sprite = lerp(0.25,1.0,self.dash_progresso/self.dash_tempo_maximo)
             if self.dash_progresso == self.dash_tempo_maximo:
                 self.dando_dash = False
                 self.dash_progresso = 0.0
         else:
+            self.escala_sprite = 1.0
             self.fadeout_escuridao = clamp(self.fadeout_escuridao -1/60, 0,1.25)
             self.dash_recarga = clamp(self.dash_recarga - 1/60,0.0,self.tempo_de_recarga_por_dash)
             if self.dash_recarga <= 0.0 and not self.pode_dar_dash:
@@ -84,7 +87,9 @@ class Player():
 
     def draw(self, tela, time):
         index = int((time * anispeed) % 3)
-        tela.blit(frames_personagem[index], (self.x, self.y))
+        frame_atual = frames_personagem[index]
+        frame_atual = pygame.transform.scale_by(frame_atual,self.escala_sprite)
+        tela.blit(frame_atual, (self.x, self.y))
 
     def draw_hud(self, tela):
         if self.pode_dar_dash:

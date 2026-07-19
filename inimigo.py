@@ -16,9 +16,6 @@ class Inimigo():
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         #Sprite temporario
         self.sprite = pygame.image.load("imagens/dash2.png").convert_alpha()
-        #Recebe info do player pra mover ate ele
-        #self.player_x = 300
-        #self.player_y = 300
     def draw(self,tela):
         tela.blit(self.sprite,(self.x,self.y))
     def movimento(self,player):
