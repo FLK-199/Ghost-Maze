@@ -13,6 +13,11 @@ FPS = pygame.time.Clock()
 #criação do player
 p1 = Player(80, 150)
 
+#Sprites
+escuro = Escuridao()
+todos_sprites = pygame.sprite.Group()
+todos_sprites.add(escuro)
+
 
 #sons
 som_troca_sala = pygame.mixer.Sound("sons/trocando de sala.wav")
@@ -42,9 +47,9 @@ trocando_de_tela = False
 tempo_total_de_transicao = 0.7
 transicao_de_tela=0.0
 
+
 def acumuladores_tempo():
     global transicao_de_tela, trocando_de_tela, tempo_total_de_transicao
-
     if trocando_de_tela:
         transicao_de_tela += 1/60
         if transicao_de_tela >= tempo_total_de_transicao:
@@ -111,7 +116,10 @@ while jogando:
         if p1.y + p1.height > 600:
             p1.alterar_posicao(p1.x, abs((600-p1.height)-p1.y))
             i += 1
-            
+
+    escuro.reposiciona(p1.x - 600 + p1.width/2,p1.y - 600 + p1.height/2)
+    escuro.reescalona(lerp(1.25,1.0,p1.dash_progresso/p1.dash_tempo_maximo),lerp(1.25,1.0,p1.dash_progresso/p1.dash_tempo_maximo))
+    todos_sprites.draw(tela)
     desenha_tela_de_transicao()
     pygame.display.update()
     FPS.tick(60)
