@@ -1,9 +1,13 @@
 import pygame
+import numpy
+from inimigo import *
 from player import *
 from fase import *
 
 pygame.init()
 pygame.mixer.init()
+
+numpy.random.seed()
 
 #controle da janela
 pygame.display.set_caption("Teste 1")
@@ -15,6 +19,9 @@ tempo = 0.0
 #criação do player
 p1 = Player(290, 420)
 
+#nimigos
+inimigos = []
+
 #Sprites
 escuro = Escuridao()
 todos_sprites = pygame.sprite.Group()
@@ -25,10 +32,13 @@ som_troca_sala = pygame.mixer.Sound("sons/trocando de sala.wav")
 som_troca_sala.set_volume(0.3)
 som_andar = pygame.mixer.Sound("sons/andando.wav")
 som_andar.set_volume(0.7)
+som_toma_dano = pygame.mixer.Sound("sons/dano.wav")
+som_toma_dano.set_volume(1.0)
 
 canal_soundtrack = pygame.mixer.Channel(0)
 canal_andar = pygame.mixer.Channel(1)
 canal_troca_sala = pygame.mixer.Channel(2)
+canal_toma_dano = pygame.mixer.Channel(3)
 
 #variaveis globais
 jogando = True
@@ -86,6 +96,9 @@ while jogando:
     teclas = pygame.key.get_pressed()
     tela.fill((154, 139, 119))
     
+    if teclas[pygame.K_SPACE]:
+        inimigos.append(Inimigo(numpy.random.normal(315,5),numpy.random.uniform(0,2*math.pi)))
+
     #carrega as fases
     if i >= 0 and i < 5 and j >= 0 and j < 5:
         fase = Tilemap("fases/fase"+ str(i) + str(j) + ".txt")
@@ -103,6 +116,7 @@ while jogando:
     if p1.borda_colisao():
         canal_troca_sala.play(som_troca_sala)
         trocando_de_tela = True
+        inimigos.clear()
         #parede da esquerda
         if p1.x < 0:
             p1.alterar_posicao((600-p1.width)+p1.x, p1.y)
@@ -129,6 +143,15 @@ while jogando:
         fase.desenhar_portao(tela)
 
     todos_sprites.draw(tela)
+    for oponente in inimigos:
+        oponente.movimento(p1)
+        oponente.draw(tela)
+        if not p1.dando_dash and p1.hitbox.colliderect(oponente.hitbox):
+            canal_toma_dano.play(som_toma_dano)
+            p1.alterar_posicao(300,300)
+            i = 1
+            j = 2
+            inimigos.clear()
     p1.draw_hud(tela)
     desenha_tela_de_transicao()
     pygame.display.update()

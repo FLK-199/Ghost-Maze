@@ -26,6 +26,7 @@ class Player():
         self.width = 20
         self.height = 20
         self.color = (150,150,230)
+        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         #--------------Movimento--------------
         self.velocidade = 2
         self.velocidade_sem_dash = 2
@@ -55,6 +56,8 @@ class Player():
     def alterar_posicao(self, x, y):
         self.x = x
         self.y = y
+        self.hitbox.x = x
+        self.hitbox.y = y
 
     def borda_colisao(self):
         if (self.x < 0 or 
@@ -115,6 +118,7 @@ class Player():
         
         if not colidiu_x:
             self.x += dx
+            self.hitbox.x = self.x
 
         futuro_rect.x = self.x
 
@@ -138,6 +142,7 @@ class Player():
 
         if not colidiu_y:
             self.y += dy
+            self.hitbox.y = self.y
 
 class Escuridao(pygame.sprite.Sprite):
     def __init__(self):
