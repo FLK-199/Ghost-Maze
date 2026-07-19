@@ -1,9 +1,16 @@
 import pygame
 
 display = 600
+
 pygame.init()
 pygame.mixer.init()
 
+frames_personagem = []
+frames_personagem.append(pygame.image.load("imagens/player1.png"))
+frames_personagem.append(pygame.image.load("imagens/player2.png"))
+frames_personagem.append(pygame.image.load("imagens/player3.png"))
+
+anispeed = 2.5
 
 def lerp(a,b,t):
     return (a + (b-a)*t)
@@ -19,22 +26,36 @@ class Player():
         self.width = 20
         self.height = 20
         self.color = (150,150,230)
+        #--------------Movimento--------------
         self.velocidade = 2
         self.velocidade_sem_dash = 2
         self.velocidade_com_dash = 9
+        self.velocidade_escala = 1.0
+        self.tempo_andando = 0.0
+        #--------------Dashes--------------
+        self.sem_dash = pygame.image.load("imagens/dash1.png").convert_alpha() 
+        self.com_dash = pygame.image.load("imagens/dash2.png").convert_alpha() 
         self.dando_dash = False
+        self.fadeout_escuridao = 0.0
+        self.campo_de_visao_offset = 0.0
         self.dash_progresso = 0.0
         self.dash_tempo_maximo = 0.35
         self.dash_recarga = 0.0
         self.tempo_de_recarga_por_dash = 3.0
-        self.quantidade_maxima_de_dashes = 2
-        self.contagem_de_dashes = -1
+        self.pode_dar_dash = True
+        self.contagem_de_dashes = 0
+        #--------------Sons--------------
         self.som_de_dash = pygame.mixer.Sound("sons/dash.wav")
         self.som_de_recarga = pygame.mixer.Sound("sons/recarga de dash.wav")
+        #--------------Chaves--------------
+        self.coletou_chave1 = False
+        self.coletou_chave2 = False
+        self.coletou_chave3 = False
 
     def alterar_posicao(self, x, y):
         self.x = x
         self.y = y
+
     def borda_colisao(self):
         if (self.x < 0 or 
             self.y < 0 or
@@ -42,6 +63,7 @@ class Player():
             self.y + self.height > display):
             return True
         return False
+    
     def gerencia_dash(self):
         if self.dando_dash:
             self.dash_progresso = clamp(self.dash_progresso + 1/60,0,self.dash_tempo_maximo)
@@ -50,28 +72,34 @@ class Player():
                 self.dando_dash = False
                 self.dash_progresso = 0.0
         else:
-            self.dash_recarga = clamp(self.dash_recarga - 1/60,0.0,self.tempo_de_recarga_por_dash*self.quantidade_maxima_de_dashes)
-            if self.dash_recarga <= self.tempo_de_recarga_por_dash*self.contagem_de_dashes:
+            self.fadeout_escuridao = clamp(self.fadeout_escuridao -1/60, 0,1.25)
+            self.dash_recarga = clamp(self.dash_recarga - 1/60,0.0,self.tempo_de_recarga_por_dash)
+            if self.dash_recarga <= 0.0 and not self.pode_dar_dash:
                 self.som_de_recarga.play(0)
-                self.contagem_de_dashes -= 1
+                self.pode_dar_dash = True
             self.velocidade = self.velocidade_sem_dash
 
-    def draw(self, tela):
-        pygame.draw.rect(tela, self.color, (self.x, self.y, self.width, self.height))
-        pygame.draw
+    def draw(self, tela, time):
+        index = int((time * anispeed) % 3)
+        tela.blit(frames_personagem[index], (self.x, self.y))
+
+    def draw_hud(self, tela):
+        if self.pode_dar_dash:
+            tela.blit(self.com_dash,(10,10))
+        else:
+            tela.blit(self.sem_dash,(10,10))
 
     def move(self, teclas, blocos):
         self.gerencia_dash()
         futuro_rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         dx = 0
-        if teclas[pygame.K_LSHIFT] and not self.dando_dash and self.dash_recarga <= (self.quantidade_maxima_de_dashes - 1)*self.tempo_de_recarga_por_dash:
+        if teclas[pygame.K_LSHIFT] and not self.dando_dash and self.dash_recarga <= 0.0 and self.pode_dar_dash:
             self.dash_recarga += self.tempo_de_recarga_por_dash
-            self.contagem_de_dashes += 1
-            if self.contagem_de_dashes == 0:
-                self.contagem_de_dashes += 1
+            self.fadeout_escuridao = 1.25
             self.dash_progresso = 0.0
             self.dando_dash = True
+            self.pode_dar_dash = False
             self.som_de_dash.play(0)
         if teclas[pygame.K_a]:
             dx -= self.velocidade
@@ -96,6 +124,11 @@ class Player():
         if teclas[pygame.K_s]:
             dy += self.velocidade
 
+        if teclas[pygame.K_w] or teclas[pygame.K_a] or teclas[pygame.K_s] or teclas[pygame.K_d]:
+            self.tempo_andando += 1/60
+        else:
+            self.tempo_andando = 0.0
+            
         futuro_rect.y += dy
         colidiu_y = False
         for bloco in blocos:
@@ -106,22 +139,22 @@ class Player():
         if not colidiu_y:
             self.y += dy
 
-
 class Escuridao(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image_original = pygame.image.load("imagens/circulo.png").convert_alpha() 
         self.image = pygame.image.load("imagens/circulo.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.center = (-1200, -1200)
+        self.dimensoes_base = (1200,1200)
+        self.dimensoes = [1200,1200]
 
     def reposiciona(self , novox, novoy):
-        self.rect.x = novox
-        self.rect.y = novoy
-    def reescalona(self, x, y):
-        nova_largura = int(1200*x)
-        nova_altura = int(1200*y)
+        self.rect.x = novox - self.dimensoes[0]/2
+        self.rect.y = novoy - self.dimensoes[1]/2
+
+    def reescalona(self, fator_de_escala):
         #Estica a imagem de um jeito maneiro, seila como q ele faz
-        self.image = pygame.transform.smoothscale(self.image_original,(nova_largura,nova_altura))
+        self.dimensoes[0] = self.dimensoes_base[0]*fator_de_escala
+        self.dimensoes[1] = self.dimensoes_base[1]*fator_de_escala
+        self.image = pygame.transform.scale_by(self.image_original,fator_de_escala)
         self.rect = self.image.get_rect()
-        self.rect.center = (-1200,-1200)

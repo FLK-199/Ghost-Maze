@@ -56,5 +56,8 @@ class Tilemap:
         if self.chave3 != (-1,-1):
             pygame.draw.rect(tela, (0, 0, 255), (self.chave3[0], self.chave3[1], TAMANHO_TILE, TAMANHO_TILE))
 
+    def desenhar_portao(self, tela):
+        pygame.draw.rect(tela, (100, 100, 100), (240, 150, 120, 210))
+
     def blocos_colisao(self):
         return self.blocos
