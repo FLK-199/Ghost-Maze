@@ -181,7 +181,7 @@ while jogando:
             fase = Tilemap(resource_path("fases/fase_branca.txt"))
             
         if p1.assombrado and not (i,j) == (2,2):
-            spawnar_inimigos(5*n_chaves_coletadas)
+            spawnar_inimigos(2*n_chaves_coletadas)
     else:
         if (i,j) != (2,2):
             escuro.reescalona(lerp(1.55+p1.campo_de_visao_offset,1.0+p1.campo_de_visao_offset,1.0 - p1.fadeout_escuridao/1.25))
@@ -194,7 +194,7 @@ while jogando:
         escuro.reescalona(2.75)
         escuro.reposiciona(300, 300)
 
-        if p1.coletou_chave3:
+        if n_chaves_coletadas == 3:
             jogando = False
             
     elif (i,j) == (0,4):
@@ -225,6 +225,7 @@ while jogando:
         
         (ci,cj) = fase.posicao_chave3()
         chave3.alterar_posicao(ci,cj)
+
         if not p1.coletou_chave3:
             chave3.desenhar(tela)
             if p1.hitbox.colliderect(chave3.hitbox):
@@ -243,13 +244,13 @@ while jogando:
             canal_toma_dano.play(som_toma_dano)
             if p1.coletou_chave3:
                 p1.desfazer_chave3()
-                n_chaves_coletadas -=1
+                n_chaves_coletadas -= 1
             elif p1.coletou_chave2:
                 p1.desfazer_chave2()
-                n_chaves_coletadas -=1
+                n_chaves_coletadas -= 1
             elif p1.coletou_chave1:
                 p1.desfazer_chave1()
-                n_chaves_coletadas -=1
+                n_chaves_coletadas -= 1
             p1.alterar_posicao(290,420)
             i = 2
             j = 2
